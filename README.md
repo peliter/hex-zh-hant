@@ -1,6 +1,6 @@
 # hex-zh-hant
 
-讓 **Hex**（Anomaly 的本機語音聽寫工具）在 Windows 上安裝好，並且把**聽寫輸出的中文改成繁體（台灣用語）**。
+讓 **Hex**（Anomaly 的本機語音聽寫工具）在 Windows 與 macOS 上安裝好，並且把**聽寫輸出的中文改成繁體（台灣用語）**。
 
 > Hex 內建只有介面語言的繁體中文，**聽寫文字本身沒有簡轉繁**。
 > 官方說明：沒有任何模型能穩定選對字形（[#1835](https://github.com/anomalyco/hex/issues/1835)），
@@ -11,8 +11,16 @@
 
 ## 給 Agent 的指令（先讀 `AGENTS.md`）
 
+**Windows（PowerShell）：**
+
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.com/mathruffian-dot/hex-zh-hant/main/install-windows.ps1 -OutFile i.ps1; ./i.ps1"
+powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.com/peliter/hex-zh-hant/main/install-windows.ps1 -OutFile i.ps1; ./i.ps1"
+```
+
+**macOS（Terminal）：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/peliter/hex-zh-hant/main/install-macos.sh | bash
 ```
 
 驗證成功的三個條件：
@@ -23,12 +31,14 @@ powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.c
 
 ## 給人的安裝方式
 
+### Windows
+
 ```powershell
 # 方法一：一行（腳本會自行下載轉換器）
-powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.com/mathruffian-dot/hex-zh-hant/main/install-windows.ps1 -OutFile i.ps1; ./i.ps1"
+powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.com/peliter/hex-zh-hant/main/install-windows.ps1 -OutFile i.ps1; ./i.ps1"
 
 # 方法二：clone 後執行
-git clone https://github.com/mathruffian-dot/hex-zh-hant
+git clone https://github.com/peliter/hex-zh-hant
 cd hex-zh-hant
 powershell -ExecutionPolicy Bypass -File .\install-windows.ps1
 ```
@@ -41,15 +51,36 @@ powershell -ExecutionPolicy Bypass -File .\install-windows.ps1
 | `-SkipHotkey` | 不動你現有的快捷鍵 |
 | `-ConfigureOnly` | 只改設定，不啟動／不安裝 Hex |
 
+### macOS（Apple Silicon / macOS 15+）
+
+```bash
+# 方法一：一行（透過 Homebrew 安裝 Hex 並設定轉換器）
+curl -fsSL https://raw.githubusercontent.com/peliter/hex-zh-hant/main/install-macos.sh | bash
+
+# 方法二：clone 後執行
+git clone https://github.com/peliter/hex-zh-hant
+cd hex-zh-hant
+chmod +x ./install-macos.sh
+./install-macos.sh
+```
+
+參數：
+
+| 參數 | 說明 |
+|---|---|
+| `--hotkey control+option+space` | 聽寫快捷鍵（預設 `⌃⌥Space`，亦可改 `right-command` 等） |
+| `--skip-hotkey` | 不動你現有的快捷鍵 |
+| `--configure-only` | 只改設定，不啟動／不安裝 Hex |
+
 ## 腳本做了什麼
 
 | 步驟 | 內容 |
 |---|---|
-| 1 | 若 `%APPDATA%\hex\bin\hex.com` 不存在，執行官方 `install-windows.ps1`（會驗證檔案大小、SHA-256 與 Authenticode 簽章） |
+| 1 | 若本機尚未安裝 Hex：Windows 執行官方 `install-windows.ps1`（驗證檔案大小、SHA-256 與簽章）；macOS 透過 `brew install --cask anomalyco/tap/hex` 安裝 |
 | 2 | 啟動再關閉 Hex，讓它把 `settings.json` 寫完整 |
 | 3 | `hex commands init` 建立 `~/.config/hex`，放入 OpenCC `s2tw`／`s2twp` 轉換器 |
-| 4 | **關閉 Hex 後**改 `settings.json`，把 `s2twp` 加進「每次聽寫」的步驟（Hex 執行中會覆寫設定，必須先關） |
-| 5 | 重新啟動 Hex，設定 `ui_language = zh-Hant` 與避開注音衝突的快捷鍵 |
+| 4 | **關閉 Hex 後**改 `settings.json`（Windows：`%APPDATA%\hex\settings.json`；macOS：`~/Library/Application Support/hex/settings.json`），把 `s2twp` 加進「每次聽寫」的步驟（Hex 執行中會覆寫設定，必須先關） |
+| 5 | 重新啟動 Hex，設定 `ui_language = zh-Hant` 與避開輸入法衝突的快捷鍵 |
 | 6 | 印出驗證結果 |
 
 ## 為什麼預設熱鍵是 Ctrl+Alt+Space
@@ -83,7 +114,7 @@ hex history --raw --limit 1               # raw_text 是簡體，final_text 應�
 - 轉換是**聽完之後**處理：即時字幕（Labs › Live text）的預覽仍是簡體，貼出的最終文字才是繁體。
 - 「每次聽寫」是全域預設；你自建的**每個 App 模式要各自再加一次** `s2twp`。
 - 依賴 OpenCC 的字典（Apache-2.0），字詞判斷以台灣用語為主；專有名詞建議加進 Hex 的 Vocabulary。
-- 只有 Windows 安裝腳本。macOS／Linux 可手動照「手動步驟」做，路徑同為 `~/.config/hex`。
+- Linux 尚無一鍵安裝腳本，可手動照「手動步驟」做，路徑同為 `~/.config/hex`。
 
 ## 手動步驟（不想跑腳本）
 

@@ -3,6 +3,7 @@
 # dictionary value and corrupt the converted text.
 * text=auto
 *.ts text eol=lf
+*.sh text eol=lf
 *.md text eol=lf
 LICENSE text eol=lf
 *.ps1 text eol=crlf

@@ -17,34 +17,43 @@ This repository installs Hex and that transformation, then wires the step into
 
 ## Requirements
 
-- Windows 10/11, x64 or ARM64
-- PowerShell 5.1+ (`powershell.exe` is fine; `pwsh` also works)
-- Network access to `anoma.ly` (Hex install + model) and `raw.githubusercontent.com`
-- Hex's OS-level prerequisites: microphone permission for the app; no admin rights
-  (per-user install into `%APPDATA%\hex`)
+- **Windows**: Windows 10/11 (x64 or ARM64), PowerShell 5.1+, network access to `anoma.ly` and `raw.githubusercontent.com`, microphone permission
+- **macOS**: macOS 15+ on Apple Silicon, Homebrew (`brew install --cask anomalyco/tap/hex`), microphone & Accessibility permissions
 
 ## Run
 
+Windows:
+
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.com/mathruffian-dot/hex-zh-hant/main/install-windows.ps1 -OutFile i.ps1; ./i.ps1"
+powershell -ExecutionPolicy Bypass -Command "iwr https://raw.githubusercontent.com/peliter/hex-zh-hant/main/install-windows.ps1 -OutFile i.ps1; ./i.ps1"
 ```
 
 Or, from a clone: `powershell -ExecutionPolicy Bypass -File .\install-windows.ps1`
 
 Useful switches: `-SkipHotkey`, `-ConfigureOnly`, `-Hotkey caps-lock`.
 
-With no path to `install-windows.ps1` (offline agent), do the four "Manual steps"
+macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/peliter/hex-zh-hant/main/install-macos.sh | bash
+```
+
+Or, from a clone: `chmod +x ./install-macos.sh && ./install-macos.sh`
+
+Useful flags: `--skip-hotkey`, `--configure-only`, `--hotkey right-command`.
+
+With no path to the install script (offline agent), do the "Manual steps"
 in `README.md` instead.
 
 ## What the script mutates
 
 | Path | Change |
 |---|---|
-| `%APPDATA%\hex\` | Hex install (official installer; verifies size + SHA-256 + Authenticode) |
-| `%USERPROFILE%\.config\hex\` | `hex.config.ts` + 3 transformer `.ts` files, `hex.d.ts`, `tsconfig.json` (via `hex commands init`) |
-| `%APPDATA%\hex\settings.json` | `dictation_processing.default_mode.transformations` gains `s2twp`; `ui_language = zh-Hant`; `dictation_hotkey` (unless `-SkipHotkey`) |
-| `%APPDATA%\hex\settings.json.bak-<timestamp>` | Backup written before the edit |
-| HKCU user `PATH` | Hex's own installer appends `%APPDATA%\hex\bin` |
+| `%APPDATA%\hex\` (Windows) / `/Applications/Hex.app` (macOS) | Hex install |
+| `%USERPROFILE%\.config\hex\` / `~/.config/hex/` | `hex.config.ts` + 3 transformer `.ts` files, `hex.d.ts`, `tsconfig.json` (via `hex commands init`) |
+| `%APPDATA%\hex\settings.json` / `~/Library/Application Support/hex/settings.json` | `dictation_processing.default_mode.transformations` gains `s2twp`; `ui_language = zh-Hant`; `dictation_hotkey` (unless skipped) |
+| `settings.json.bak-<timestamp>` | Backup written before the edit |
+| HKCU user `PATH` (Windows) | Hex's own installer appends `%APPDATA%\hex\bin` |
 
 It does **not** touch other apps' config, the registry beyond Hex's own keys, or
 any network service besides the two hosts above.
